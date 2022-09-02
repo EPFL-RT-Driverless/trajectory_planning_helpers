@@ -1,12 +1,14 @@
 import sys
 
 
-def progressbar(i: int,
-                i_total: int,
-                prefix: str = '',
-                suffix: str = '',
-                decimals: int = 1,
-                length: int = 50) -> None:
+def progressbar(
+    i: int,
+    i_total: int,
+    prefix: str = "",
+    suffix: str = "",
+    decimals: int = 1,
+    length: int = 50,
+) -> None:
     """
     author:
     Tim Stahl
@@ -36,10 +38,10 @@ def progressbar(i: int,
     filled_length = int(length * i // i_total)
 
     # generate progress sting
-    bar = '█' * filled_length + '-' * (length - filled_length)
+    bar = "█" * filled_length + "-" * (length - filled_length)
 
     # print ("\r" for same line)
-    sys.stdout.write('\r%s |%s| %s%% %s' % (prefix, bar, percent, suffix))
+    sys.stdout.write("\r%s |%s| %s%% %s" % (prefix, bar, percent, suffix))
 
     # new line when done
     if i >= i_total:

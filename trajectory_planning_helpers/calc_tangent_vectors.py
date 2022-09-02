@@ -39,5 +39,7 @@ def calc_tangent_vectors(psi: np.ndarray) -> np.ndarray:
 
 # testing --------------------------------------------------------------------------------------------------------------
 if __name__ == "__main__":
-    psi_test = np.array([0.0, math.pi/4, math.pi/2, math.pi, -math.pi, -math.pi/2])
+    psi_test = np.array(
+        [0.0, math.pi / 4, math.pi / 2, math.pi, -math.pi, -math.pi / 2]
+    )
     print("Result:\n", calc_tangent_vectors(psi=psi_test))

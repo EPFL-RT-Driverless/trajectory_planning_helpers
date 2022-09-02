@@ -3,12 +3,14 @@ import math
 import trajectory_planning_helpers.normalize_psi
 
 
-def calc_head_curv_an(coeffs_x: np.ndarray,
-                      coeffs_y: np.ndarray,
-                      ind_spls: np.ndarray,
-                      t_spls: np.ndarray,
-                      calc_curv: bool = True,
-                      calc_dcurv: bool = False) -> tuple:
+def calc_head_curv_an(
+    coeffs_x: np.ndarray,
+    coeffs_y: np.ndarray,
+    ind_spls: np.ndarray,
+    t_spls: np.ndarray,
+    calc_curv: bool = True,
+    calc_dcurv: bool = False,
+) -> tuple:
     """
     author:
     Alexander Heilmeier
@@ -59,13 +61,17 @@ def calc_head_curv_an(coeffs_x: np.ndarray,
     # ------------------------------------------------------------------------------------------------------------------
 
     # calculate required derivatives
-    x_d = coeffs_x[ind_spls, 1] \
-          + 2 * coeffs_x[ind_spls, 2] * t_spls \
-          + 3 * coeffs_x[ind_spls, 3] * np.power(t_spls, 2)
+    x_d = (
+        coeffs_x[ind_spls, 1]
+        + 2 * coeffs_x[ind_spls, 2] * t_spls
+        + 3 * coeffs_x[ind_spls, 3] * np.power(t_spls, 2)
+    )
 
-    y_d = coeffs_y[ind_spls, 1] \
-          + 2 * coeffs_y[ind_spls, 2] * t_spls \
-          + 3 * coeffs_y[ind_spls, 3] * np.power(t_spls, 2)
+    y_d = (
+        coeffs_y[ind_spls, 1]
+        + 2 * coeffs_y[ind_spls, 2] * t_spls
+        + 3 * coeffs_y[ind_spls, 3] * np.power(t_spls, 2)
+    )
 
     # calculate heading psi (pi/2 must be substracted due to our convention that psi = 0 is north)
     psi = np.arctan2(y_d, x_d) - math.pi / 2
@@ -77,14 +83,14 @@ def calc_head_curv_an(coeffs_x: np.ndarray,
 
     if calc_curv:
         # calculate required derivatives
-        x_dd = 2 * coeffs_x[ind_spls, 2] \
-               + 6 * coeffs_x[ind_spls, 3] * t_spls
+        x_dd = 2 * coeffs_x[ind_spls, 2] + 6 * coeffs_x[ind_spls, 3] * t_spls
 
-        y_dd = 2 * coeffs_y[ind_spls, 2] \
-               + 6 * coeffs_y[ind_spls, 3] * t_spls
+        y_dd = 2 * coeffs_y[ind_spls, 2] + 6 * coeffs_y[ind_spls, 3] * t_spls
 
         # calculate curvature kappa
-        kappa = (x_d * y_dd - y_d * x_dd) / np.power(np.power(x_d, 2) + np.power(y_d, 2), 1.5)
+        kappa = (x_d * y_dd - y_d * x_dd) / np.power(
+            np.power(x_d, 2) + np.power(y_d, 2), 1.5
+        )
 
     else:
         kappa = 0.0
@@ -100,9 +106,10 @@ def calc_head_curv_an(coeffs_x: np.ndarray,
         y_ddd = 6 * coeffs_y[ind_spls, 3]
 
         # calculate first derivative of curvature dkappa
-        dkappa = ((np.power(x_d, 2) + np.power(y_d, 2)) * (x_d * y_ddd - y_d * x_ddd) -
-                  3 * (x_d * y_dd - y_d * x_dd) * (x_d * x_dd + y_d * y_dd)) / \
-                 np.power(np.power(x_d, 2) + np.power(y_d, 2), 3)
+        dkappa = (
+            (np.power(x_d, 2) + np.power(y_d, 2)) * (x_d * y_ddd - y_d * x_ddd)
+            - 3 * (x_d * y_dd - y_d * x_dd) * (x_d * x_dd + y_d * y_dd)
+        ) / np.power(np.power(x_d, 2) + np.power(y_d, 2), 3)
 
         return psi, kappa, dkappa
 
