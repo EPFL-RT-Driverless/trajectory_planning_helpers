@@ -5,10 +5,8 @@ import cvxopt
 import numpy as np
 import quadprog
 from matplotlib import pyplot as plt
-from numba import njit
 
 
-@njit
 def opt_min_curv(
     reftrack: np.ndarray,
     normvectors: np.ndarray,
@@ -22,7 +20,7 @@ def opt_min_curv(
     psi_e: float = None,
     fix_s: bool = False,
     fix_e: bool = False,
-    method: str = "cvxopt",
+    method: str = "quadprog",
 ) -> tuple:
     """
     author:
@@ -333,6 +331,7 @@ def opt_min_curv(
         will use a wrong cost function if a non-symmetric matrix is provided.
         """
         alpha_mincurv = quadprog.solve_qp(H, -f, -G.T, -h, 0)[0]
+
     else:
         raise ValueError("Unknown method: " + method)
 
