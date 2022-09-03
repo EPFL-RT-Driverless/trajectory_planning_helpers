@@ -1,6 +1,8 @@
-import numpy as np
 import math
-import trajectory_planning_helpers.calc_spline_lengths
+
+import numpy as np
+
+from .calc_spline_lengths import calc_spline_lengths
 
 
 def interp_splines(
@@ -85,10 +87,8 @@ def interp_splines(
     if stepsize_approx is not None:
         # get the total distance up to the end of every spline (i.e. cumulated distances)
         if spline_lengths is None:
-            spline_lengths = (
-                trajectory_planning_helpers.calc_spline_lengths.calc_spline_lengths(
-                    coeffs_x=coeffs_x, coeffs_y=coeffs_y, quickndirty=False
-                )
+            spline_lengths = calc_spline_lengths(
+                coeffs_x=coeffs_x, coeffs_y=coeffs_y, quickndirty=False
             )
 
         dists_cum = np.cumsum(spline_lengths)

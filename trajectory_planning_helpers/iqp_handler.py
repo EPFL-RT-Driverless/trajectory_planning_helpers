@@ -1,5 +1,10 @@
 import numpy as np
-import trajectory_planning_helpers as tph
+from .opt_min_curv import opt_min_curv
+from .calc_head_curv_an import calc_head_curv_an
+from .calc_spline_lengths import calc_spline_lengths
+from .calc_splines import calc_splines
+from .create_raceline import create_raceline
+from .interp_track_widths import interp_track_widths
 
 
 def iqp_handler(
@@ -126,7 +131,7 @@ def iqp_handler(
         iter_cur += 1
 
         # calculate intermediate solution and catch sum of squared curvature errors
-        alpha_mincurv_tmp, curv_error_max_tmp = tph.opt_min_curv.opt_min_curv(
+        alpha_mincurv_tmp, curv_error_max_tmp = opt_min_curv(
             reftrack=reftrack_tmp,
             normvectors=normvectors_tmp,
             A=A_tmp,
@@ -157,27 +162,18 @@ def iqp_handler(
         # INTERPOLATION FOR EQUAL STEPSIZES ----------------------------------------------------------------------------
         # --------------------------------------------------------------------------------------------------------------
 
-        (
-            refline_tmp,
-            _,
-            _,
-            _,
-            spline_inds_tmp,
-            t_values_tmp,
-        ) = tph.create_raceline.create_raceline(
+        (refline_tmp, _, _, _, spline_inds_tmp, t_values_tmp,) = create_raceline(
             refline=reftrack_tmp[:, :2],
             normvectors=normvectors_tmp,
             alpha=alpha_mincurv_tmp,
             stepsize_interp=stepsize_interp,
-        )[
-            :6
-        ]
+        )[:6]
 
         # calculate new track boundaries on the basis of the intermediate alpha values and interpolate them accordingly
         reftrack_tmp[:, 2] -= alpha_mincurv_tmp
         reftrack_tmp[:, 3] += alpha_mincurv_tmp
 
-        ws_track_tmp = tph.interp_track_widths.interp_track_widths(
+        ws_track_tmp = interp_track_widths(
             w_track=reftrack_tmp[:, 2:],
             spline_inds=spline_inds_tmp,
             t_values=t_values_tmp,
@@ -199,10 +195,10 @@ def iqp_handler(
             coeffs_y_tmp,
             A_tmp,
             normvectors_tmp,
-        ) = tph.calc_splines.calc_splines(path=refline_tmp_cl, use_dist_scaling=False)
+        ) = calc_splines(path=refline_tmp_cl, use_dist_scaling=False)
 
         # calculate spline lengths
-        spline_len_tmp = tph.calc_spline_lengths.calc_spline_lengths(
+        spline_len_tmp = calc_spline_lengths(
             coeffs_x=coeffs_x_tmp, coeffs_y=coeffs_y_tmp
         )
 
@@ -211,7 +207,7 @@ def iqp_handler(
             psi_reftrack_tmp,
             kappa_reftrack_tmp,
             dkappa_reftrack_tmp,
-        ) = tph.calc_head_curv_an.calc_head_curv_an(
+        ) = calc_head_curv_an(
             coeffs_x=coeffs_x_tmp,
             coeffs_y=coeffs_y_tmp,
             ind_spls=np.arange(reftrack_tmp.shape[0]),

@@ -1,6 +1,6 @@
 import numpy as np
 import math
-import trajectory_planning_helpers.conv_filt
+from .conv_filt import conv_filt
 
 
 def calc_vel_profile(
@@ -230,7 +230,7 @@ def calc_vel_profile(
     # ------------------------------------------------------------------------------------------------------------------
 
     if filt_window is not None:
-        vx_profile = trajectory_planning_helpers.conv_filt.conv_filt(
+        vx_profile = conv_filt(
             signal=vx_profile, filt_window=filt_window, closed=closed
         )
 

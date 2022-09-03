@@ -1,5 +1,5 @@
 import numpy as np
-import trajectory_planning_helpers.angle3pt
+from .angle3pt import angle3pt
 from typing import Union
 
 
@@ -79,16 +79,10 @@ def path_matching_local(
         ind_follow = min(ind_min + 1, dists_to_cg.shape[0] - 1)
 
     # get angle between selected point and neighbours: ang1 to previous point, ang2 to following point on path
-    ang_prev = np.abs(
-        trajectory_planning_helpers.angle3pt.angle3pt(
-            path[ind_min, 1:3], ego_position, path[ind_prev, 1:3]
-        )
-    )
+    ang_prev = np.abs(angle3pt(path[ind_min, 1:3], ego_position, path[ind_prev, 1:3]))
 
     ang_follow = np.abs(
-        trajectory_planning_helpers.angle3pt.angle3pt(
-            path[ind_min, 1:3], ego_position, path[ind_follow, 1:3]
-        )
+        angle3pt(path[ind_min, 1:3], ego_position, path[ind_follow, 1:3])
     )
 
     # extract neighboring points -> closest point and the point resulting in the larger angle

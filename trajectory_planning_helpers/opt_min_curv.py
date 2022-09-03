@@ -1,8 +1,11 @@
 import numpy as np
 import math
-import quadprog
 
-# import cvxopt
+import quadprog
+import cvxopt
+from scipy.sparse import csc_matrix
+import osqp
+
 import time
 
 
@@ -19,6 +22,7 @@ def opt_min_curv(
     psi_e: float = None,
     fix_s: bool = False,
     fix_e: bool = False,
+    method: str = "cvxopt",
 ) -> tuple:
     """
     author:
@@ -83,6 +87,12 @@ def opt_min_curv(
     # ------------------------------------------------------------------------------------------------------------------
     # PREPARATIONS -----------------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
+    assert method in [
+        "quadprog",
+        "cvxopt",
+        "osqp",
+    ], "method must be one of cvxpy, cvxopt, osqp"
+    preparation_time_start = time.perf_counter()
 
     no_points = reftrack.shape[0]
 
@@ -239,49 +249,6 @@ def opt_min_curv(
     # CALL QUADRATIC PROGRAMMING ALGORITHM -----------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
 
-    """
-    quadprog interface description taken from 
-    https://github.com/stephane-caron/qpsolvers/blob/master/qpsolvers/quadprog_.py
-
-    Solve a Quadratic Program defined as:
-
-        minimize
-            (1/2) * alpha.T * H * alpha + f.T * alpha
-
-        subject to
-            G * alpha <= h
-            A * alpha == b
-
-    using quadprog <https://pypi.python.org/pypi/quadprog/>.
-
-    Parameters
-    ----------
-    H : numpy.array
-        Symmetric quadratic-cost matrix.
-    f : numpy.array
-        Quadratic-cost vector.
-    G : numpy.array
-        Linear inequality constraint matrix.
-    h : numpy.array
-        Linear inequality constraint vector.
-    A : numpy.array, optional
-        Linear equality constraint matrix.
-    b : numpy.array, optional
-        Linear equality constraint vector.
-    initvals : numpy.array, optional
-        Warm-start guess vector (not used).
-
-    Returns
-    -------
-    alpha : numpy.array
-            Solution to the QP, if found, otherwise ``None``.
-
-    Note
-    ----
-    The quadprog solver only considers the lower entries of `H`, therefore it
-    will use a wrong cost function if a non-symmetric matrix is provided.
-    """
-
     # calculate allowed deviation from refline
     dev_max_right = reftrack[:, 2] - w_veh / 2
     dev_max_left = reftrack[:, 3] - w_veh / 2
@@ -306,26 +273,88 @@ def opt_min_curv(
     h = np.append(dev_max_right, dev_max_left)
     h = np.append(h, con_stack)
 
+    # print preparation time
+    print(
+        "Solver runtime opt_min_curv: "
+        + "{:.3f}".format(time.perf_counter() - preparation_time_start)
+        + "s"
+    )
+
     # save start time
-    t_start = time.perf_counter()
+    solve_time_start = time.perf_counter()
 
-    # solve problem (CVXOPT) -------------------------------------------------------------------------------------------
-    # args = [cvxopt.matrix(H), cvxopt.matrix(f), cvxopt.matrix(G), cvxopt.matrix(h)]
-    # sol = cvxopt.solvers.qp(*args)
-    #
-    # if 'optimal' not in sol['status']:
-    #     print("WARNING: Optimal solution not found!")
-    #
-    # alpha_mincurv = np.array(sol['x']).reshape((H.shape[1],))
+    if method == "cvxopt":
+        args = [cvxopt.matrix(H), cvxopt.matrix(f), cvxopt.matrix(G), cvxopt.matrix(h)]
+        sol = cvxopt.solvers.qp(*args)
 
-    # solve problem (quadprog) -----------------------------------------------------------------------------------------
-    alpha_mincurv = quadprog.solve_qp(H, -f, -G.T, -h, 0)[0]
+        if "optimal" not in sol["status"]:
+            print("WARNING: Optimal solution not found!")
+
+        alpha_mincurv = np.array(sol["x"]).reshape((H.shape[1],))
+
+    elif method == "quadprog":
+        """
+        quadprog interface description taken from
+        https://github.com/stephane-caron/qpsolvers/blob/master/qpsolvers/quadprog_.py
+
+        Solve a Quadratic Program defined as:
+
+            minimize
+                (1/2) * alpha.T * H * alpha + f.T * alpha
+
+            subject to
+                G * alpha <= h
+                A * alpha == b
+
+        using quadprog <https://pypi.python.org/pypi/quadprog/>.
+
+        Parameters
+        ----------
+        H : numpy.array
+            Symmetric quadratic-cost matrix.
+        f : numpy.array
+            Quadratic-cost vector.
+        G : numpy.array
+            Linear inequality constraint matrix.
+        h : numpy.array
+            Linear inequality constraint vector.
+        A : numpy.array, optional
+            Linear equality constraint matrix.
+        b : numpy.array, optional
+            Linear equality constraint vector.
+        initvals : numpy.array, optional
+            Warm-start guess vector (not used).
+
+        Returns
+        -------
+        alpha : numpy.array
+                Solution to the QP, if found, otherwise ``None``.
+
+        Note
+        ----
+        The quadprog solver only considers the lower entries of `H`, therefore it
+        will use a wrong cost function if a non-symmetric matrix is provided.
+        """
+        alpha_mincurv = quadprog.solve_qp(H, -f, -G.T, -h, 0)[0]
+
+    elif method == "osqp":
+        m = osqp.OSQP()
+        m.setup(
+            P=csc_matrix(H),
+            q=f,
+            A=csc_matrix(G),
+            l=-np.inf * np.ones_like(h),
+            u=h,
+            verbose=False,
+        )
+        res = m.solve()
+        alpha_mincurv = res.x
 
     # print runtime into console window
     if print_debug:
         print(
             "Solver runtime opt_min_curv: "
-            + "{:.3f}".format(time.perf_counter() - t_start)
+            + "{:.3f}".format(time.perf_counter() - solve_time_start)
             + "s"
         )
 
@@ -386,7 +415,7 @@ if __name__ == "__main__":
     from calc_splines import calc_splines
 
     # --- PARAMETERS ---
-    CLOSED = True
+    CLOSED = False
 
     # --- IMPORT TRACK ---
     # load data from csv file
@@ -424,6 +453,8 @@ if __name__ == "__main__":
         closed=CLOSED,
         psi_s=psi_s,
         psi_e=psi_e,
+        print_debug=True,
+        method="quadprog",
     )
 
     # --- PLOT RESULTS ---

@@ -1,6 +1,6 @@
 import numpy as np
 import math
-import trajectory_planning_helpers.normalize_psi
+from .normalize_psi import normalize_psi
 
 
 def calc_head_curv_num(
@@ -113,7 +113,7 @@ def calc_head_curv_num(
 
         # calculate psi of tangent vectors (pi/2 must be substracted due to our convention that psi = 0 is north)
         psi = np.arctan2(tangvecs[:, 1], tangvecs[:, 0]) - math.pi / 2
-        psi = trajectory_planning_helpers.normalize_psi.normalize_psi(psi)
+        psi = normalize_psi(psi)
 
         # --------------------------------------------------------------------------------------------------------------
         # CURVATURE ----------------------------------------------------------------------------------------------------
@@ -127,9 +127,7 @@ def calc_head_curv_num(
             delta_psi = np.zeros(no_points)
 
             for i in range(no_points):
-                delta_psi[i] = trajectory_planning_helpers.normalize_psi.normalize_psi(
-                    psi_temp[i + steps_tot_curv] - psi_temp[i]
-                )
+                delta_psi[i] = normalize_psi(psi_temp[i + steps_tot_curv] - psi_temp[i])
 
             # calculate kappa
             s_points_cl = np.cumsum(el_lengths)
@@ -177,7 +175,7 @@ def calc_head_curv_num(
 
         # calculate psi of tangent vectors (pi/2 must be substracted due to our convention that psi = 0 is north)
         psi = np.arctan2(tangvecs[:, 1], tangvecs[:, 0]) - math.pi / 2
-        psi = trajectory_planning_helpers.normalize_psi.normalize_psi(psi)
+        psi = normalize_psi(psi)
 
         # --------------------------------------------------------------------------------------------------------------
         # CURVATURE ----------------------------------------------------------------------------------------------------
@@ -192,9 +190,7 @@ def calc_head_curv_num(
             delta_psi[-1] = psi[-1] - psi[-2]  # i == -1
 
             # normalize delta_psi
-            delta_psi = trajectory_planning_helpers.normalize_psi.normalize_psi(
-                delta_psi
-            )
+            delta_psi = normalize_psi(delta_psi)
 
             # calculate kappa
             kappa = np.zeros(no_points)

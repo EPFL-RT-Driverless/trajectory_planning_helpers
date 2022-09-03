@@ -1,5 +1,7 @@
 import numpy as np
-import trajectory_planning_helpers as tph
+from .calc_splines import calc_splines
+from .calc_spline_lengths import calc_spline_lengths
+from .interp_splines import interp_splines
 
 
 def create_raceline(
@@ -59,10 +61,10 @@ def create_raceline(
         coeffs_y_raceline,
         A_raceline,
         normvectors_raceline,
-    ) = tph.calc_splines.calc_splines(path=raceline_cl, use_dist_scaling=False)
+    ) = calc_splines(path=raceline_cl, use_dist_scaling=False)
 
     # calculate new spline lengths
-    spline_lengths_raceline = tph.calc_spline_lengths.calc_spline_lengths(
+    spline_lengths_raceline = calc_spline_lengths(
         coeffs_x=coeffs_x_raceline, coeffs_y=coeffs_y_raceline
     )
 
@@ -72,7 +74,7 @@ def create_raceline(
         spline_inds_raceline_interp,
         t_values_raceline_interp,
         s_raceline_interp,
-    ) = tph.interp_splines.interp_splines(
+    ) = interp_splines(
         spline_lengths=spline_lengths_raceline,
         coeffs_x=coeffs_x_raceline,
         coeffs_y=coeffs_y_raceline,

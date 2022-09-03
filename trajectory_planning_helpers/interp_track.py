@@ -11,7 +11,7 @@ def interp_track(track: np.ndarray, stepsize: float) -> np.ndarray:
     Interpolate track points linearly to a new stepsize.
 
     .. inputs::
-    :param track:           track in the format [x, y, w_tr_right, w_tr_left, (banking)].
+    :param track:           track in the format [x, y, w_tr_right, w_tr_left, (banking)]. Has to be unclosed
     :type track:            np.ndarray
     :param stepsize:        desired stepsize after interpolation in m.
     :type stepsize:         float

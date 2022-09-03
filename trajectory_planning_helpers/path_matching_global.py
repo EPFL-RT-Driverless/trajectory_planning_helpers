@@ -1,6 +1,6 @@
 import numpy as np
-import trajectory_planning_helpers.path_matching_local
-import trajectory_planning_helpers.get_rel_path_part
+from .path_matching_local import path_matching_local
+from .get_rel_path_part import get_rel_path_part
 from typing import Union
 
 
@@ -54,7 +54,7 @@ def path_matching_global(
     s_tot = path_cl[-1, 0]
 
     if s_expected is not None:
-        path_rel = trajectory_planning_helpers.get_rel_path_part.get_rel_path_part(
+        path_rel = get_rel_path_part(
             path_cl=path_cl, s_pos=s_expected, s_dist_back=s_range, s_dist_forw=s_range
         )[0]
 
@@ -73,10 +73,7 @@ def path_matching_global(
     # ------------------------------------------------------------------------------------------------------------------
 
     # get s_interp and d_displ
-    (
-        s_interp,
-        d_displ,
-    ) = trajectory_planning_helpers.path_matching_local.path_matching_local(
+    (s_interp, d_displ,) = path_matching_local(
         path=path_rel,
         ego_position=ego_position,
         consider_as_closed=consider_as_closed,

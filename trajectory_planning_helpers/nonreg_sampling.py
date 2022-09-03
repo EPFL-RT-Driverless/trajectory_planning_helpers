@@ -1,5 +1,6 @@
 import numpy as np
-import trajectory_planning_helpers as tph
+from .calc_splines import calc_splines
+from .calc_head_curv_an import calc_head_curv_an
 
 
 def nonreg_sampling(
@@ -36,8 +37,8 @@ def nonreg_sampling(
 
     # calculate curvature (required to be able to differentiate straight and corner sections)
     path_cl = np.vstack((track[:, :2], track[0, :2]))
-    coeffs_x, coeffs_y = tph.calc_splines.calc_splines(path=path_cl)[:2]
-    kappa_path = tph.calc_head_curv_an.calc_head_curv_an(
+    coeffs_x, coeffs_y = calc_splines(path=path_cl)[:2]
+    kappa_path = calc_head_curv_an(
         coeffs_x=coeffs_x,
         coeffs_y=coeffs_y,
         ind_spls=np.arange(0, coeffs_x.shape[0]),

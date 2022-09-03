@@ -1,6 +1,6 @@
 import numpy as np
 import math
-import trajectory_planning_helpers.calc_ax_profile
+from .calc_ax_profile import calc_ax_profile
 
 
 def calc_t_profile(
@@ -50,7 +50,7 @@ def calc_t_profile(
 
     # calculate acceleration profile if required
     if ax_profile is None:
-        ax_profile = trajectory_planning_helpers.calc_ax_profile.calc_ax_profile(
+        ax_profile = calc_ax_profile(
             vx_profile=vx_profile, el_lengths=el_lengths, eq_length_output=False
         )
 

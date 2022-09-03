@@ -3,7 +3,8 @@ from scipy import optimize
 from scipy import spatial
 import numpy as np
 import math
-import trajectory_planning_helpers as tph
+from .interp_track import interp_track
+from .side_of_line import side_of_line
 
 
 def spline_approximation(
@@ -51,7 +52,7 @@ def spline_approximation(
     # LINEAR INTERPOLATION BEFORE SMOOTHING ----------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
 
-    track_interp = tph.interp_track.interp_track(track=track, stepsize=stepsize_prep)
+    track_interp = interp_track(track=track, stepsize=stepsize_prep)
     track_interp_cl = np.vstack((track_interp, track_interp[0]))
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -131,7 +132,7 @@ def spline_approximation(
     sides = np.zeros(no_points_track_cl - 1)
 
     for i in range(no_points_track_cl - 1):
-        sides[i] = tph.side_of_line.side_of_line(
+        sides[i] = side_of_line(
             a=track_cl[i, :2], b=track_cl[i + 1, :2], z=closest_point_cl[i]
         )
 
