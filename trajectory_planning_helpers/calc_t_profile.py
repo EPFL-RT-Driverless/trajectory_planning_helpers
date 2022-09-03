@@ -74,8 +74,3 @@ def calc_t_profile(
     t_profile = np.insert(np.cumsum(t_steps), 0, 0.0) + t_start
 
     return t_profile
-
-
-# testing --------------------------------------------------------------------------------------------------------------
-if __name__ == "__main__":
-    pass

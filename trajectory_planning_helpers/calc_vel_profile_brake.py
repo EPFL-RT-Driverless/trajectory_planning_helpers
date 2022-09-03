@@ -208,8 +208,3 @@ def calc_vel_profile_brake(
             vx_profile[i + 1] = math.sqrt(radicand)
 
     return vx_profile
-
-
-# testing --------------------------------------------------------------------------------------------------------------
-if __name__ == "__main__":
-    pass

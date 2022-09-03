@@ -1,14 +1,14 @@
-import numpy as np
 import math
-
-import quadprog
-import cvxopt
-from scipy.sparse import csc_matrix
-import osqp
-
 import time
 
+import cvxopt
+import numpy as np
+import quadprog
+from matplotlib import pyplot as plt
+from numba import njit
 
+
+@njit
 def opt_min_curv(
     reftrack: np.ndarray,
     normvectors: np.ndarray,
@@ -75,6 +75,8 @@ def opt_min_curv(
     :type fix_s:        bool
     :param fix_e:       determines if last point is fixed to reference line for unclosed tracks
     :type fix_e:        bool
+    :param method:      method to be used for solving the QP problem. Either "cvxopt" or "quadprog"
+    :type method:       str
 
     .. outputs::
     :return alpha_mincurv:  solution vector of the opt. problem containing the lateral shift in m for every point.
@@ -87,11 +89,6 @@ def opt_min_curv(
     # ------------------------------------------------------------------------------------------------------------------
     # PREPARATIONS -----------------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
-    assert method in [
-        "quadprog",
-        "cvxopt",
-        "osqp",
-    ], "method must be one of cvxpy, cvxopt, osqp"
     preparation_time_start = time.perf_counter()
 
     no_points = reftrack.shape[0]
@@ -336,19 +333,8 @@ def opt_min_curv(
         will use a wrong cost function if a non-symmetric matrix is provided.
         """
         alpha_mincurv = quadprog.solve_qp(H, -f, -G.T, -h, 0)[0]
-
-    elif method == "osqp":
-        m = osqp.OSQP()
-        m.setup(
-            P=csc_matrix(H),
-            q=f,
-            A=csc_matrix(G),
-            l=-np.inf * np.ones_like(h),
-            u=h,
-            verbose=False,
-        )
-        res = m.solve()
-        alpha_mincurv = res.x
+    else:
+        raise ValueError("Unknown method: " + method)
 
     # print runtime into console window
     if print_debug:
@@ -403,70 +389,3 @@ def opt_min_curv(
     curv_error_max = np.amax(np.abs(curv_sol_lin - curv_orig_lin))
 
     return alpha_mincurv, curv_error_max
-
-
-# testing --------------------------------------------------------------------------------------------------------------
-if __name__ == "__main__":
-    import os
-    import sys
-    import matplotlib.pyplot as plt
-
-    sys.path.append(os.path.dirname(__file__))
-    from calc_splines import calc_splines
-
-    # --- PARAMETERS ---
-    CLOSED = False
-
-    # --- IMPORT TRACK ---
-    # load data from csv file
-    csv_data_temp = np.loadtxt(
-        os.path.dirname(__file__) + "/../example_files/berlin_2018.csv",
-        comments="#",
-        delimiter=",",
-    )
-
-    # get coords and track widths out of array
-    reftrack = csv_data_temp[:, 0:4]
-    psi_s = 0.0
-    psi_e = 2.0
-
-    # --- CALCULATE MIN CURV ---
-    if CLOSED:
-        coeffs_x, coeffs_y, M, normvec_norm = calc_splines(
-            path=np.vstack((reftrack[:, 0:2], reftrack[0, 0:2]))
-        )
-    else:
-        reftrack = reftrack[200:600, :]
-        coeffs_x, coeffs_y, M, normvec_norm = calc_splines(
-            path=reftrack[:, 0:2], psi_s=psi_s, psi_e=psi_e
-        )
-
-        # extend norm-vec to same size of ref track (quick fix for testing only)
-        normvec_norm = np.vstack((normvec_norm[0, :], normvec_norm))
-
-    alpha_mincurv, curv_error_max = opt_min_curv(
-        reftrack=reftrack,
-        normvectors=normvec_norm,
-        A=M,
-        kappa_bound=0.4,
-        w_veh=2.0,
-        closed=CLOSED,
-        psi_s=psi_s,
-        psi_e=psi_e,
-        print_debug=True,
-        method="quadprog",
-    )
-
-    # --- PLOT RESULTS ---
-    path_result = reftrack[:, 0:2] + normvec_norm * np.expand_dims(
-        alpha_mincurv, axis=1
-    )
-    bound1 = reftrack[:, 0:2] - normvec_norm * np.expand_dims(reftrack[:, 2], axis=1)
-    bound2 = reftrack[:, 0:2] + normvec_norm * np.expand_dims(reftrack[:, 3], axis=1)
-
-    plt.plot(reftrack[:, 0], reftrack[:, 1], ":")
-    plt.plot(path_result[:, 0], path_result[:, 1])
-    plt.plot(bound1[:, 0], bound1[:, 1], "k")
-    plt.plot(bound2[:, 0], bound2[:, 1], "k")
-    plt.axis("equal")
-    plt.show()

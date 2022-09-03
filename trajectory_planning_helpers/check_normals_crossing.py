@@ -82,8 +82,3 @@ def check_normals_crossing(
                 return True  # found crossing
 
     return False
-
-
-# testing --------------------------------------------------------------------------------------------------------------
-if __name__ == "__main__":
-    pass

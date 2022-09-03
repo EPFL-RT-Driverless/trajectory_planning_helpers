@@ -56,8 +56,3 @@ def nonreg_sampling(
             idx_latest = idx + step_non_reg + 1
 
     return track[sample_idxs], np.array(sample_idxs)
-
-
-# testing --------------------------------------------------------------------------------------------------------------
-if __name__ == "__main__":
-    pass

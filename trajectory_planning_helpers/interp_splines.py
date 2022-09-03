@@ -213,8 +213,3 @@ def interp_splines(
 
     # NOTE: dists_interp is None, when using a fixed step size
     return path_interp, spline_inds, t_values, dists_interp
-
-
-# testing --------------------------------------------------------------------------------------------------------------
-if __name__ == "__main__":
-    pass

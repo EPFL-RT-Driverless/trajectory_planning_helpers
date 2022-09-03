@@ -684,8 +684,3 @@ def calc_ax_poss(
         ax_final = ax_avail_vehicle - ax_drag
 
     return ax_final
-
-
-# testing --------------------------------------------------------------------------------------------------------------
-if __name__ == "__main__":
-    pass

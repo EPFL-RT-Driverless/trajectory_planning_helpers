@@ -88,8 +88,3 @@ def path_matching_global(
     # now the following holds: s_interp -> [0.0; s_tot[
 
     return s_interp, d_displ
-
-
-# testing --------------------------------------------------------------------------------------------------------------
-if __name__ == "__main__":
-    pass

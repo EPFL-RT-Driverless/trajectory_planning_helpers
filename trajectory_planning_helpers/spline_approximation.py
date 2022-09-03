@@ -172,8 +172,3 @@ def spline_approximation(
 def dist_to_p(t_glob: np.ndarray, path: list, p: np.ndarray):
     s = interpolate.splev(t_glob, path)
     return spatial.distance.euclidean(p, s)
-
-
-# testing --------------------------------------------------------------------------------------------------------------
-if __name__ == "__main__":
-    pass

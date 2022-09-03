@@ -100,8 +100,3 @@ def create_raceline(
         spline_lengths_raceline,
         el_lengths_raceline_interp_cl,
     )
-
-
-# testing --------------------------------------------------------------------------------------------------------------
-if __name__ == "__main__":
-    pass

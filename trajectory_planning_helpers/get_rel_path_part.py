@@ -124,8 +124,3 @@ def get_rel_path_part(
             bound_left_rel = None
 
     return path_rel, bound_right_rel, bound_left_rel
-
-
-# testing --------------------------------------------------------------------------------------------------------------
-if __name__ == "__main__":
-    pass

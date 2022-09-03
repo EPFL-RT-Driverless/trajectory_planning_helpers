@@ -38,8 +38,3 @@ def normalize_psi(psi: Union[np.ndarray, float]) -> np.ndarray:
             psi_out += 2 * math.pi
 
     return psi_out
-
-
-# testing --------------------------------------------------------------------------------------------------------------
-if __name__ == "__main__":
-    pass
