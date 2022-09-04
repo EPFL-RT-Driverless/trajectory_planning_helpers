@@ -10,7 +10,7 @@ with open("requirements.txt", "r") as fh:
 
 setuptools.setup(
     name="trajectory-planning-helpers",
-    version="0.78",
+    version="1.0.0",
     url="https://github.com/EPFL-RT-Driverless/trajectory_planning_helpers",
     author="Alexander Heilmeier, Tim Stahl, Fabian Christ, Tudor Oancea",
     description="Useful functions used for path and trajectory planning",
