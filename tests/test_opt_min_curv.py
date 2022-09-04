@@ -12,7 +12,7 @@ if __name__ == "__main__":
     # --- IMPORT TRACK ---
     # load data from csv file
     csv_data_temp = np.loadtxt(
-        os.path.dirname(__file__) + "/../example_files/berlin_2018.csv",
+        os.path.join(os.path.dirname(__file__), "example_files/berlin_2018.csv"),
         comments="#",
         delimiter=",",
     )
