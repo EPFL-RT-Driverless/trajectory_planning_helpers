@@ -71,8 +71,3 @@ def conv_filt(signal: np.ndarray, filt_window: int, closed: bool) -> np.ndarray:
         )[w_window_half:-w_window_half]
 
     return signal_filt
-
-
-# testing --------------------------------------------------------------------------------------------------------------
-if __name__ == "__main__":
-    pass

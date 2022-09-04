@@ -224,8 +224,3 @@ def iqp_handler(
         kappa_reftrack_tmp,
         dkappa_reftrack_tmp,
     )
-
-
-# testing --------------------------------------------------------------------------------------------------------------
-if __name__ == "__main__":
-    pass

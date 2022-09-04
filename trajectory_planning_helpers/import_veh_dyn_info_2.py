@@ -90,8 +90,3 @@ def import_veh_dyn_info_2(filepath2localgg: str = "") -> np.ndarray:
         )
 
     return tpamap
-
-
-# testing --------------------------------------------------------------------------------------------------------------
-if __name__ == "__main__":
-    pass

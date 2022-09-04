@@ -57,8 +57,3 @@ def interp_track(track: np.ndarray, stepsize: float) -> np.ndarray:
         track_interp_cl[:, 4] = np.interp(dists_interp_cl, dists_cum_cl, track_cl[:, 4])
 
     return track_interp_cl[:-1]
-
-
-# testing --------------------------------------------------------------------------------------------------------------
-if __name__ == "__main__":
-    pass

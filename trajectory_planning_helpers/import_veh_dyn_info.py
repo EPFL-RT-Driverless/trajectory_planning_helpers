@@ -90,8 +90,3 @@ def import_veh_dyn_info(
         ax_max_machines = None
 
     return ggv, ax_max_machines
-
-
-# testing --------------------------------------------------------------------------------------------------------------
-if __name__ == "__main__":
-    pass

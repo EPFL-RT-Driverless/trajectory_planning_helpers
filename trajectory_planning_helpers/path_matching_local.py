@@ -125,8 +125,3 @@ def path_matching_local(
     d_displ = dists_to_cg[ind_min_interp]
 
     return s_interp, d_displ
-
-
-# testing --------------------------------------------------------------------------------------------------------------
-if __name__ == "__main__":
-    pass
