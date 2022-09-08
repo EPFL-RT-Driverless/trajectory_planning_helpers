@@ -37,6 +37,8 @@ input must be inserted without drag resistance, i.e. simply by calculating F_x_d
 * `progressbar`: Commandline progressbar (to be called in a for loop).
 * `side_of_line`: Function determines if a point is on the left or right side of a line.
 * `spline_approximation`: Function used to obtain a smoothed track on the basis of a spline approximation.
+* `uniform_spline_from_points`: Function to create a uniform spline (i.e. whose
+  continuous parameter corresponds to the arc length) from a given set of points.
 
 # Example files
 The folder `example_files` contains an exemplary track file (`berlin_2018.csv`), ggv (`ggv.csv`) and ax_ax_machines file

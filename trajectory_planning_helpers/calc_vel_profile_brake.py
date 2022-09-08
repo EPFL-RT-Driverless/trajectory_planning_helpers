@@ -1,6 +1,6 @@
 import numpy as np
 import math
-from .calc_vel_profile import calc_vel_profile
+from .calc_vel_profile import calc_vel_profile, calc_ax_poss
 from .calc_ax_profile import calc_ax_profile
 
 
@@ -166,7 +166,7 @@ def calc_vel_profile_brake(
         ggv_mod[
             :, 1
         ] *= -1.0  # use negative acceleration in x axis for forward deceleration
-        ax_final = calc_ax_profile(
+        ax_final = calc_ax_poss(
             vx_start=vx_profile[i],
             radius=radii[i],
             ggv=ggv_mod,

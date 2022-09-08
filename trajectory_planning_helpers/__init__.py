@@ -31,3 +31,4 @@ from trajectory_planning_helpers.calc_normal_vectors_ahead import (
 from trajectory_planning_helpers.import_veh_dyn_info_2 import import_veh_dyn_info_2
 from trajectory_planning_helpers.nonreg_sampling import nonreg_sampling
 from trajectory_planning_helpers.interp_track import interp_track
+from trajectory_planning_helpers.splunif import uniform_spline_from_points
