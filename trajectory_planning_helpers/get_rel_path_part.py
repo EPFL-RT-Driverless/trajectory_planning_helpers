@@ -47,6 +47,8 @@ def get_rel_path_part(
     s_tot = path_cl[-1, 0]
 
     # check distance input
+    assert s_dist_back >= 0.0, "s_dist_back must be >= 0.0!"
+    assert s_dist_forw >= 0.0, "s_dist_forw must be >= 0.0!"
     if s_dist_back + s_dist_forw >= s_tot:
         raise RuntimeError(
             "Summed distance inputs are greater or equal to the total distance of the given path!"
@@ -64,8 +66,8 @@ def get_rel_path_part(
         )
 
     # cut s position if it exceeds the path length
-    if s_pos >= s_tot:
-        s_pos -= s_tot
+    if s_pos >= s_tot or s_pos < 0.0:
+        s_pos = np.mod(s_pos, s_tot)
 
     # set s boundaries
     s_min = s_pos - s_dist_back
