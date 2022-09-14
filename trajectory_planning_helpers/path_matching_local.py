@@ -78,21 +78,19 @@ def path_matching_local(
         ind_prev = max(ind_min - 1, 0)
         ind_follow = min(ind_min + 1, dists_to_cg.shape[0] - 1)
 
-    # get angle between selected point and neighbours: ang1 to previous point, ang2 to following point on path
-    ang_prev = np.abs(angle3pt(path[ind_min, 1:3], ego_position, path[ind_prev, 1:3]))
+    # get angle between selected point and neighbours
+    ang_prev = np.abs(angle3pt(path[ind_min, 1:], ego_position, path[ind_prev, 1:]))
 
-    ang_follow = np.abs(
-        angle3pt(path[ind_min, 1:3], ego_position, path[ind_follow, 1:3])
-    )
+    ang_follow = np.abs(angle3pt(path[ind_min, 1:], ego_position, path[ind_follow, 1:]))
 
     # extract neighboring points -> closest point and the point resulting in the larger angle
     if ang_prev > ang_follow:
-        a_pos = path[ind_prev, 1:3]
-        b_pos = path[ind_min, 1:3]
+        a_pos = path[ind_prev, 1:]
+        b_pos = path[ind_min, 1:]
         s_curs = np.append(path[ind_prev, 0], path[ind_min, 0])
     else:
-        a_pos = path[ind_min, 1:3]
-        b_pos = path[ind_follow, 1:3]
+        a_pos = path[ind_min, 1:]
+        b_pos = path[ind_follow, 1:]
         s_curs = np.append(path[ind_min, 0], path[ind_follow, 0])
 
     # adjust s if closed path shell be considered and we have the case of interpolation between last and first point

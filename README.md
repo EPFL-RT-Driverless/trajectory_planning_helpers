@@ -55,4 +55,5 @@ chose the `C++ build tools` option to install the required C++ compiler and its 
 1. `matplotlib` requires `tkinter` -> can be solved by `sudo apt install python3-tk`
 2. `Python.h` required `quadprog` -> can be solved by `sudo apt install python3-dev`
 
-Contact persons: [Alexander Heilmeier](mailto:alexander.heilmeier@tum.de), [Tim Stahl](mailto:stahl@ftm.mw.tum.de).
+Contact persons: [Alexander Heilmeier](mailto:alexander.heilmeier@tum.de), 
+[Tim Stahl](mailto:stahl@ftm.mw.tum.de), [Tudor Oancea](mailto:tudor.oancea@epfl.ch)

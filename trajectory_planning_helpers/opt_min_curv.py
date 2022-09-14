@@ -174,11 +174,11 @@ def opt_min_curv(
 
     # for unclosed tracks, specify start- and end-heading constraints
     if not closed:
-        q_x[-2, 0] = math.cos(psi_s + math.pi / 2)
-        q_y[-2, 0] = math.sin(psi_s + math.pi / 2)
+        q_x[-2, 0] = math.cos(psi_s)
+        q_y[-2, 0] = math.sin(psi_s)
 
-        q_x[-1, 0] = math.cos(psi_e + math.pi / 2)
-        q_y[-1, 0] = math.sin(psi_e + math.pi / 2)
+        q_x[-1, 0] = math.cos(psi_e)
+        q_y[-1, 0] = math.sin(psi_e)
 
     # set up P_xx, P_xy, P_yy matrices
     x_prime = np.eye(no_points, no_points) * np.matmul(np.matmul(A_ex_b, A_inv), q_x)

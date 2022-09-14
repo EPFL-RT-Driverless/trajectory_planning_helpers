@@ -1,3 +1,6 @@
+# v1.2.0
+Changed the interface of some functions
+
 # v1.1.0
 added splunif to the stack
 

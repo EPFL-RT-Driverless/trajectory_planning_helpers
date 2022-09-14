@@ -9,7 +9,7 @@ def interp_splines(
     coeffs_x: np.ndarray,
     coeffs_y: np.ndarray,
     spline_lengths: np.ndarray = None,
-    incl_last_point: bool = False,
+    closed: bool = True,
     stepsize_approx: float = None,
     stepnum_fixed: list = None,
 ) -> tuple:
@@ -27,10 +27,10 @@ def interp_splines(
     :type coeffs_x:         np.ndarray
     :param coeffs_y:        coefficient matrix of the y splines with size (no_splines x 4).
     :type coeffs_y:         np.ndarray
-    :param spline_lengths:  array containing the lengths of the inserted splines with size (no_splines x 1).
+    :param spline_lengths:  array containing the lengths of the inserted splines with size (no_splines, ).
     :type spline_lengths:   np.ndarray
-    :param incl_last_point: flag to set if last point should be kept or removed before return.
-    :type incl_last_point:  bool
+    :param closed:          whether the path should be considered as closed or not
+    :type closed:           bool
     :param stepsize_approx: desired stepsize of the points after interpolation.                      \\ Provide only one
     :type stepsize_approx:  float
     :param stepnum_fixed:   return a fixed number of coordinates per spline, list of length no_splines. \\ of these two!
@@ -49,7 +49,7 @@ def interp_splines(
     .. notes::
     len(coeffs_x) = len(coeffs_y) = len(spline_lengths)
 
-    len(path_interp = len(spline_inds) = len(t_values) = len(dists_interp)
+    len(path_interp) = len(spline_inds) = len(t_values) = len(dists_interp)
     """
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -197,19 +197,19 @@ def interp_splines(
     # CALCULATE LAST POINT IF REQUIRED (t = 1.0) -----------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
 
-    if incl_last_point:
-        path_interp[-1, 0] = np.sum(coeffs_x[-1])
-        path_interp[-1, 1] = np.sum(coeffs_y[-1])
-        spline_inds[-1] = coeffs_x.shape[0] - 1
-        t_values[-1] = 1.0
-
-    else:
+    if closed:
         path_interp = path_interp[:-1]
         spline_inds = spline_inds[:-1]
         t_values = t_values[:-1]
 
         if dists_interp is not None:
             dists_interp = dists_interp[:-1]
+
+    else:
+        path_interp[-1, 0] = np.sum(coeffs_x[-1])
+        path_interp[-1, 1] = np.sum(coeffs_y[-1])
+        spline_inds[-1] = coeffs_x.shape[0] - 1
+        t_values[-1] = 1.0
 
     # NOTE: dists_interp is None, when using a fixed step size
     return path_interp, spline_inds, t_values, dists_interp

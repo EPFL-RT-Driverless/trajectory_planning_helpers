@@ -2,6 +2,7 @@ import numpy as np
 from .calc_splines import calc_splines
 from .calc_spline_lengths import calc_spline_lengths
 from .interp_splines import interp_splines
+from .calc_normal_vectors_ahead import calc_normal_vectors_ahead
 
 
 def create_raceline(
@@ -9,6 +10,9 @@ def create_raceline(
     normvectors: np.ndarray,
     alpha: np.ndarray,
     stepsize_interp: float,
+    closed: bool = True,
+    psi_s: float = None,
+    psi_e: float = None,
 ) -> tuple:
     """
     author:
@@ -21,12 +25,16 @@ def create_raceline(
     :param refline:         array containing the track reference line [x, y] (unit is meter, must be unclosed!)
     :type refline:          np.ndarray
     :param normvectors:     normalized normal vectors for every point of the reference line [x_component, y_component]
-                            (unit is meter, must be unclosed!)
+                            (unit is meter, must be unclosed! must be the same length as refline!)
     :type normvectors:      np.ndarray
     :param alpha:           solution vector of the optimization problem containing the lateral shift in m for every point.
     :type alpha:            np.ndarray
     :param stepsize_interp: stepsize in meters which is used for the interpolation after the raceline creation.
     :type stepsize_interp:  float
+    :param closed:          whether the track is closed or not
+
+    :param psi_s:           heading at the start of the raceline, must be specified if closed
+    :param psi_e:
 
     .. outputs::
     :return raceline_interp:                interpolated raceline [x, y] in m.
@@ -37,6 +45,8 @@ def create_raceline(
     :rtype coeffs_x_raceline:               np.ndarray
     :return coeffs_y_raceline:              spline coefficients of the y-component.
     :rtype coeffs_y_raceline:               np.ndarray
+    :return normvectors_raceline:           normalized normal vectors for every point of the raceline [x_component, y_component]
+    :rtype normvectors_raceline:            np.ndarray
     :return spline_inds_raceline_interp:    contains the indices of the splines that hold the interpolated points.
     :rtype spline_inds_raceline_interp:     np.ndarray
     :return t_values_raceline_interp:       containts the relative spline coordinate values (t) of every point on the
@@ -53,15 +63,22 @@ def create_raceline(
     # calculate raceline on the basis of the optimized alpha values
     raceline = refline + np.expand_dims(alpha, 1) * normvectors
 
-    # calculate new splines on the basis of the raceline
-    raceline_cl = np.vstack((raceline, raceline[0]))
-
     (
         coeffs_x_raceline,
         coeffs_y_raceline,
         A_raceline,
         normvectors_raceline,
-    ) = calc_splines(path=raceline_cl, use_dist_scaling=False)
+    ) = calc_splines(
+        path=raceline,
+        use_dist_scaling=True,
+        closed=closed,
+        psi_s=psi_s,
+        psi_e=psi_e,
+    )
+    if not closed:
+        normvectors_raceline = np.vstack(
+            (normvectors_raceline, calc_normal_vectors_ahead(psi_e))
+        )
 
     # calculate new spline lengths
     spline_lengths_raceline = calc_spline_lengths(
@@ -75,28 +92,34 @@ def create_raceline(
         t_values_raceline_interp,
         s_raceline_interp,
     ) = interp_splines(
-        spline_lengths=spline_lengths_raceline,
         coeffs_x=coeffs_x_raceline,
         coeffs_y=coeffs_y_raceline,
-        incl_last_point=False,
+        spline_lengths=spline_lengths_raceline,
+        closed=closed,
         stepsize_approx=stepsize_interp,
     )
 
     # calculate element lengths
-    s_tot_raceline = float(np.sum(spline_lengths_raceline))
+    if not closed:
+        s_tot_raceline = s_raceline_interp[-1]
+    else:
+        s_tot_raceline = float(np.sum(spline_lengths_raceline))
+
     el_lengths_raceline_interp = np.diff(s_raceline_interp)
-    el_lengths_raceline_interp_cl = np.append(
-        el_lengths_raceline_interp, s_tot_raceline - s_raceline_interp[-1]
-    )
+    if closed:
+        el_lengths_raceline_interp = np.append(
+            el_lengths_raceline_interp, s_tot_raceline - s_raceline_interp[-1]
+        )
 
     return (
         raceline_interp,
         A_raceline,
         coeffs_x_raceline,
         coeffs_y_raceline,
+        normvectors_raceline,
         spline_inds_raceline_interp,
         t_values_raceline_interp,
         s_raceline_interp,
         spline_lengths_raceline,
-        el_lengths_raceline_interp_cl,
+        el_lengths_raceline_interp,
     )
