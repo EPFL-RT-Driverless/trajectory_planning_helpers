@@ -31,14 +31,14 @@ def create_ppoly(
         breaks_y = breaks_x
 
     x_spline = PPoly(
-        coeffs_x.T,
+        coeffs_x[:, ::-1].T,
         breaks_x
         if breaks_x is not None
         else np.arange(coeffs_x.shape[0] + 1, dtype=np.float64),
         extrapolate="periodic" if periodic else False,
     )
     y_spline = PPoly(
-        coeffs_y.T,
+        coeffs_y[:, ::-1].T,
         breaks_y
         if breaks_y is not None
         else np.arange(coeffs_y.shape[0] + 1, dtype=np.float64),
