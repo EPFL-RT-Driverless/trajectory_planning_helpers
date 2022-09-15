@@ -74,7 +74,7 @@ def calc_head_curv_an(
     )
 
     # calculate heading psi (pi/2 must be substracted due to our convention that psi = 0 is north)
-    psi = np.arctan2(y_d, x_d) - math.pi / 2
+    psi = np.arctan2(y_d, x_d)
     psi = normalize_psi(psi)
 
     # ------------------------------------------------------------------------------------------------------------------
