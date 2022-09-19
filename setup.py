@@ -6,11 +6,15 @@ with open("README.md", "r") as fh:
 with open("requirements.txt", "r") as fh:
     requirements = fh.read().splitlines()
     # remove lines that start with #
-    requirements = [r for r in requirements if not r.startswith("#")]
+    requirements = [
+        r
+        for r in requirements
+        if not (r.startswith("#") or r.startswith("-e git+") or r.startswith("git+"))
+    ]
 
 setuptools.setup(
     name="trajectory-planning-helpers",
-    version="2.0.0",
+    version="2.0.1",
     url="https://github.com/EPFL-RT-Driverless/trajectory_planning_helpers",
     author="Alexander Heilmeier, Tim Stahl, Fabian Christ, Tudor Oancea",
     description="Useful functions used for path and trajectory planning",
