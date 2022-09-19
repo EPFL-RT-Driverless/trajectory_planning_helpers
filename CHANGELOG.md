@@ -1,3 +1,7 @@
+# v2.0.0
+Updated the dependency system to full pip and updated the repo to match
+`python_boilerplate` v2.0.1
+
 # v1.2.0
 Changed the interface of some functions
 

@@ -8,7 +8,6 @@ def path_matching_local(
     ego_position: np.ndarray,
     consider_as_closed: bool = False,
     s_tot: Union[float, None] = None,
-    no_interp_values: int = 11,
 ) -> tuple:
     """
     author:
@@ -27,9 +26,6 @@ def path_matching_local(
     :type consider_as_closed:   bool
     :param s_tot:               Total length of path in m.
     :type s_tot:                Union[float, None]
-    :param no_interp_values:    Number of interpolation points that are created between the two closest points on the
-                                path to obtain a more accurate result.
-    :type no_interp_values:     int
 
     .. outputs::
     :return s_interp:           Interpolated s position of the vehicle in m.
@@ -100,26 +96,35 @@ def path_matching_local(
         elif ind_min == dists_to_cg.shape[0] - 1 and ang_prev <= ang_follow:
             s_curs[1] = s_tot
 
-    # interpolate between those points (linear) for better positioning
-    t_lin = np.linspace(
-        0.0, 1.0, no_interp_values
-    )  # set relative lengths that are evaluated for interpolation
-    x_cg_interp = np.linspace(a_pos[0], b_pos[0], no_interp_values)
-    y_cg_interp = np.linspace(a_pos[1], b_pos[1], no_interp_values)
-
-    # get nearest of those interpolated points relative to ego position
-    dists_to_cg = np.hypot(x_cg_interp - ego_position[0], y_cg_interp - ego_position[1])
-    ind_min_interp = np.argpartition(dists_to_cg, 1)[0]
-    t_lin_used = t_lin[ind_min_interp]
+    # project the ego position onto the line between the two points
+    dx = b_pos[0] - a_pos[0]
+    dy = b_pos[1] - a_pos[1]
+    lam = (dx * (ego_position[0] - a_pos[0]) + dy * (ego_position[1] - a_pos[1])) / (
+        dx**2 + dy**2
+    )
 
     # ------------------------------------------------------------------------------------------------------------------
     # CALCULATE REQUIRED INFORMATION -----------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
 
     # calculate current path length
-    s_interp = np.interp(t_lin_used, (0.0, 1.0), s_curs)
+    s_interp = s_curs[0] + lam * (s_curs[1] - s_curs[0])
 
     # get displacement between ego position and path (needed for lookahead distance)
-    d_displ = dists_to_cg[ind_min_interp]
+    x_proj = a_pos[0] + lam * dx
+    y_proj = a_pos[1] + lam * dy
+
+    # try:
+    #     d_displ = np.sqrt(
+    #         np.linalg.norm(ego_position - a_pos) ** 2
+    #         - lam**2 * np.linalg.norm(b_pos - a_pos) ** 2
+    #     )
+    # except RuntimeWarning:
+    #     d_displ = 0.0
+    #     print(
+    #         np.linalg.norm(ego_position - a_pos) ** 2,
+    #         lam**2 * np.linalg.norm(b_pos - a_pos) ** 2,
+    #     )
+    d_displ = np.sqrt((ego_position - x_proj) ** 2 + (ego_position - y_proj) ** 2)
 
     return s_interp, d_displ

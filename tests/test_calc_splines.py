@@ -15,7 +15,7 @@ if __name__ == "__main__":
     path_interp = interp_splines(
         coeffs_x=coeffs_x_,
         coeffs_y=coeffs_y_,
-        incl_last_point=True,
+        closed=False,
         stepsize_approx=0.5,
     )[0]
 

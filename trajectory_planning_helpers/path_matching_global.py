@@ -9,7 +9,6 @@ def path_matching_global(
     ego_position: np.ndarray,
     s_expected: Union[float, None] = None,
     s_range: float = 20.0,
-    no_interp_values: int = 11,
 ) -> tuple:
     """
     author:
@@ -27,9 +26,6 @@ def path_matching_global(
     :type s_expected:       Union[float, None]
     :param s_range:         Range around expected s position of the vehicle to search for the match in m.
     :type s_range:          float
-    :param no_interp_values:    Number of interpolation points that are created between the two closest points on the
-                                path to obtain a more accurate result.
-    :type no_interp_values:     int
 
     .. outputs::
     :return s_interp:       Interpolated s position of the vehicle in m. The following holds: s_interp in range
@@ -78,7 +74,6 @@ def path_matching_global(
         ego_position=ego_position,
         consider_as_closed=consider_as_closed,
         s_tot=s_tot,
-        no_interp_values=no_interp_values,
     )
 
     # cut length if bigger than s_tot

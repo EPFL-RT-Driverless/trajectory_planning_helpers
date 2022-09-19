@@ -19,18 +19,22 @@ if __name__ == "__main__":
 
     # get coords and track widths out of array
     reftrack = csv_data_temp[:, 0:4]
-    psi_s = 0.0
-    psi_e = 2.0
 
     # --- CALCULATE MIN CURV ---
     if CLOSED:
         coeffs_x, coeffs_y, M, normvec_norm = calc_splines(
-            path=np.vstack((reftrack[:, 0:2], reftrack[0, 0:2]))
+            path=reftrack[:, 0:2], closed=CLOSED
         )
     else:
+        psi_s = np.arctan2(
+            reftrack[201, 1] - reftrack[200, 1], reftrack[201, 0] - reftrack[200, 0]
+        )
+        psi_e = np.arctan2(
+            reftrack[600, 1] - reftrack[599, 1], reftrack[600, 0] - reftrack[599, 0]
+        )
         reftrack = reftrack[200:600, :]
         coeffs_x, coeffs_y, M, normvec_norm = calc_splines(
-            path=reftrack[:, 0:2], psi_s=psi_s, psi_e=psi_e
+            path=reftrack[:, 0:2], closed=CLOSED, psi_s=psi_s, psi_e=psi_e
         )
 
         # extend norm-vec to same size of ref track (quick fix for testing only)
