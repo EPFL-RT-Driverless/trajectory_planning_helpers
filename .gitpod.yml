@@ -1,8 +1,8 @@
-# Copyright (c) Tudor Oancea, 2022
+# Copyright (c) Tudor Oancea, EPFL Racing Team, 2022
 
 tasks:
   - name: Install dependencies
-    init: bash setup_workspace.sh
+    init: bash scripts/setup_workspace.sh
 
 github:
   prebuilds:
