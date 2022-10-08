@@ -1,3 +1,7 @@
+# v2.0.2
+ 
+Fixed a bug in `calc_splines` and only left `quadprog` as dependency for curvature minimization
+
 # v2.0.1
 
 Fixed import of git deps in `setup.py`
