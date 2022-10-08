@@ -1,7 +1,6 @@
 import math
 import time
 
-import cvxopt
 import numpy as np
 import quadprog
 from matplotlib import pyplot as plt
@@ -73,7 +72,7 @@ def opt_min_curv(
     :type fix_s:        bool
     :param fix_e:       determines if last point is fixed to reference line for unclosed tracks
     :type fix_e:        bool
-    :param method:      method to be used for solving the QP problem. Either "cvxopt" or "quadprog"
+    :param method:      method to be used for solving the QP problem. "quadprog"
     :type method:       str
 
     .. outputs::
@@ -278,16 +277,7 @@ def opt_min_curv(
     # save start time
     solve_time_start = time.perf_counter()
 
-    if method == "cvxopt":
-        args = [cvxopt.matrix(H), cvxopt.matrix(f), cvxopt.matrix(G), cvxopt.matrix(h)]
-        sol = cvxopt.solvers.qp(*args)
-
-        if "optimal" not in sol["status"]:
-            print("WARNING: Optimal solution not found!")
-
-        alpha_mincurv = np.array(sol["x"]).reshape((H.shape[1],))
-
-    elif method == "quadprog":
+    if method == "quadprog":
         """
         quadprog interface description taken from
         https://github.com/stephane-caron/qpsolvers/blob/master/qpsolvers/quadprog_.py

@@ -62,9 +62,9 @@ def calc_splines(
     Coefficient matrices have the form a_0i, a_1i * t, a_2i * t^2, a_3i * t^3.
     """
     # check inputs =============================================================
-    if closed:
+    if not closed:
         assert (
-            psi_s is None and psi_e is None
+            psi_s is not None and psi_e is not None
         ), "psi_s and psi_e must be None if path is closed!"
 
     # if distances between path coordinates are not provided but required, calculate
