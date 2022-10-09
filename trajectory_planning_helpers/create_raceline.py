@@ -4,6 +4,7 @@ from .calc_spline_lengths import calc_spline_lengths
 from .interp_splines import interp_splines
 from .calc_normal_vectors_ahead import calc_normal_vectors_ahead
 
+from time import perf_counter
 
 def create_raceline(
     refline: np.ndarray,
@@ -63,6 +64,7 @@ def create_raceline(
     # calculate raceline on the basis of the optimized alpha values
     raceline = refline + np.expand_dims(alpha, 1) * normvectors
 
+    t1 = perf_counter()
     (
         coeffs_x_raceline,
         coeffs_y_raceline,
@@ -75,17 +77,20 @@ def create_raceline(
         psi_s=psi_s,
         psi_e=psi_e,
     )
+    print("    calc_splines {} ms".format((perf_counter() - t1)*1000))
     if not closed:
         normvectors_raceline = np.vstack(
             (normvectors_raceline, calc_normal_vectors_ahead(psi_e))
         )
 
     # calculate new spline lengths
+    t1 = perf_counter()
     spline_lengths_raceline = calc_spline_lengths(
         coeffs_x=coeffs_x_raceline, coeffs_y=coeffs_y_raceline
     )
-
+    print("    calc_spline_lengths {} ms".format((perf_counter() - t1) * 1000))
     # interpolate splines for evenly spaced raceline points
+    t1 = perf_counter()
     (
         raceline_interp,
         spline_inds_raceline_interp,
@@ -98,7 +103,7 @@ def create_raceline(
         closed=closed,
         stepsize_approx=stepsize_interp,
     )
-
+    print("    interp_splines {} ms".format((perf_counter() - t1) * 1000))
     # calculate element lengths
     if not closed:
         s_tot_raceline = s_raceline_interp[-1]

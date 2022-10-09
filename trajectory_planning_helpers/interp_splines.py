@@ -4,6 +4,8 @@ import numpy as np
 
 from .calc_spline_lengths import calc_spline_lengths
 
+from time import perf_counter
+
 
 def interp_splines(
     coeffs_x: np.ndarray,
@@ -108,10 +110,12 @@ def interp_splines(
 
     # create arrays to save the values
     path_interp = np.zeros((no_interp_points, 2))  # raceline coords (x, y) array
+    # path_interp2 = np.zeros((no_interp_points, 2))  # raceline coords (x, y) array
     spline_inds = np.zeros(
         no_interp_points, dtype=int
     )  # save the spline index to which a point belongs
     t_values = np.zeros(no_interp_points)  # save t values
+    # t_values2 = np.zeros(no_interp_points)  # save t values
 
     if stepsize_approx is not None:
 
@@ -119,35 +123,63 @@ def interp_splines(
         # APPROX. EQUAL STEP SIZE ALONG PATH OF ADJACENT SPLINES -------------------------------------------------------
         # --------------------------------------------------------------------------------------------------------------
 
-        # loop through all the elements and create steps with stepsize_approx
-        for i in range(no_interp_points - 1):
-            # find the spline that hosts the current interpolation point
-            j = np.argmax(dists_interp[i] < dists_cum)
-            spline_inds[i] = j
+        # # loop through all the elements and create steps with stepsize_approx
+        # t1 = perf_counter()
+        # for i in range(no_interp_points - 1):
+        #     # find the spline that hosts the current interpolation point
+        #     j = np.argmax(dists_interp[i] < dists_cum)
+        #     spline_inds[i] = j
+        #
+        #     # get spline t value depending on the progress within the current element
+        #     if j > 0:
+        #         t_values[i] = (dists_interp[i] - dists_cum[j - 1]) / spline_lengths[j]
+        #     else:
+        #         if spline_lengths.ndim == 0:
+        #             t_values[i] = dists_interp[i] / spline_lengths
+        #         else:
+        #             t_values[i] = dists_interp[i] / spline_lengths[0]
+        #
+        #     # calculate coords
+        #     path_interp[i, 0] = (
+        #         coeffs_x[j, 0]
+        #         + coeffs_x[j, 1] * t_values[i]
+        #         + coeffs_x[j, 2] * math.pow(t_values[i], 2)
+        #         + coeffs_x[j, 3] * math.pow(t_values[i], 3)
+        #     )
+        #
+        #     path_interp[i, 1] = (
+        #         coeffs_y[j, 0]
+        #         + coeffs_y[j, 1] * t_values[i]
+        #         + coeffs_y[j, 2] * math.pow(t_values[i], 2)
+        #         + coeffs_y[j, 3] * math.pow(t_values[i], 3)
+        #     )
+        # print("      for no_inter_points : {} ms".format((perf_counter() - t1) * 1000))
 
-            # get spline t value depending on the progress within the current element
-            if j > 0:
-                t_values[i] = (dists_interp[i] - dists_cum[j - 1]) / spline_lengths[j]
-            else:
-                if spline_lengths.ndim == 0:
-                    t_values[i] = dists_interp[i] / spline_lengths
-                else:
-                    t_values[i] = dists_interp[i] / spline_lengths[0]
+        # t1 = perf_counter()
+        j = np.argmax(dists_interp[:, np.newaxis] < dists_cum, axis=1)
+        spline_inds = np.copy(j)
 
-            # calculate coords
-            path_interp[i, 0] = (
-                coeffs_x[j, 0]
-                + coeffs_x[j, 1] * t_values[i]
-                + coeffs_x[j, 2] * math.pow(t_values[i], 2)
-                + coeffs_x[j, 3] * math.pow(t_values[i], 3)
-            )
+        t_values[j > 0] = (dists_interp[j > 0] - dists_cum[j - 1][j > 0]) / spline_lengths[j][j > 0]
+        t_values[j == 0] = dists_interp[j == 0] / spline_lengths[0]
+        #t_values = t_values.reshape(1, no_interp_points)
+        t_values[-1] = 0.0
+        path_interp[:, 0] = coeffs_x[j][:, 0]
+        path_interp[:, 1] = coeffs_y[j][:, 0]
 
-            path_interp[i, 1] = (
-                coeffs_y[j, 0]
-                + coeffs_y[j, 1] * t_values[i]
-                + coeffs_y[j, 2] * math.pow(t_values[i], 2)
-                + coeffs_y[j, 3] * math.pow(t_values[i], 3)
-            )
+
+        path_interp[:, 0] += (coeffs_x[j][:, 1] * t_values)
+        path_interp[:, 0] += (coeffs_x[j][:, 2] * np.power(t_values, 2))
+        path_interp[:, 0] += (coeffs_x[j][:, 3] * np.power(t_values, 3))
+
+        path_interp[:, 1] += (coeffs_y[j][:, 1] * t_values)
+        path_interp[:, 1] += (coeffs_y[j][:, 2] * np.power(t_values, 2))
+        path_interp[:, 1] += (coeffs_y[j][:, 3] * np.power(t_values, 3))
+
+        path_interp[-1][0] = 0.0
+        path_interp[-1][1] = 0.0
+        # print("      numpy power : {} ms".format((perf_counter() - t1) * 1000))
+        # print("      diff : {}".format(np.linalg.norm(path_interp[:,0] - path_interp[:,0])))
+        path_interp = path_interp
 
     else:
 

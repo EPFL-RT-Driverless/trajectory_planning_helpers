@@ -2,6 +2,9 @@ import math
 
 import numpy as np
 
+import scipy as sp
+
+from time import perf_counter
 
 def calc_splines(
     path: np.ndarray,
@@ -190,21 +193,31 @@ def calc_splines(
     # SOLVE ------------------------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
 
+    # t1 = perf_counter()
+    sparse_M = sp.sparse.csc_matrix(M) # TODO : can be improved
     x_les = np.squeeze(
-        np.linalg.solve(M, b_x)
+        sp.sparse.linalg.spsolve(sparse_M, b_x)
+        #sp.linalg.solve(M, b_x)
     )  # squeeze removes single-dimensional entries
-    y_les = np.squeeze(np.linalg.solve(M, b_y))
+    # print("      solve dim {} {} ms".format(M.shape, (perf_counter() - t1) * 1000))
+    # t1 = perf_counter()
+    y_les = np.squeeze(sp.sparse.linalg.spsolve(sparse_M, b_y))
+    # print("      solve second : {} ms".format((perf_counter() - t1) * 1000))
 
     # get coefficients of every piece into one row -> reshape
+    # t1 = perf_counter()
     coeffs_x = np.reshape(x_les, (no_splines, 4))
     coeffs_y = np.reshape(y_les, (no_splines, 4))
+    # print("      last step : {} ms".format((perf_counter() - t1) * 1000))
 
     # get normal vector (behind used here instead of ahead for consistency with other
     # functions) (second coefficient of cubic splines is relevant for the heading)
     normvec = np.stack((coeffs_y[:, 1], -coeffs_x[:, 1]), axis=1)
 
     # normalize normal vectors
+    # t1 = perf_counter()
     norm_factors = 1.0 / np.sqrt(np.sum(np.power(normvec, 2), axis=1))
     normvec_normalized = np.expand_dims(norm_factors, axis=1) * normvec
+    # print("      normalize : {} ms".format((perf_counter() - t1)*1000))
 
     return coeffs_x, coeffs_y, M, normvec_normalized
