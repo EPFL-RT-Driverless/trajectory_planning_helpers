@@ -1,3 +1,7 @@
+# v2.0.3
+
+fixed a small bug in `opt_min_curv` in the prints
+
 # v2.0.2
  
 Fixed a bug in `calc_splines` and only left `quadprog` as dependency for curvature minimization
