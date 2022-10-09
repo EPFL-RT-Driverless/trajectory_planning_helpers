@@ -1,3 +1,8 @@
+# v2.0.4
+
+Fixed small bug in `local_path_matching()` to be able to localize points after the last
+point in the track. 
+
 # v2.0.3
 
 fixed a small bug in `opt_min_curv` in the prints

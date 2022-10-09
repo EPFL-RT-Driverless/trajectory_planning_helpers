@@ -52,79 +52,74 @@ def path_matching_local(
     # SELF LOCALIZATION ON RACELINE ------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
 
-    # get the nearest path point to ego position
-    dists_to_cg = np.hypot(path[:, 1] - ego_position[0], path[:, 2] - ego_position[1])
-    ind_min = np.argpartition(dists_to_cg, 1)[0]
+    if path.shape[0] == 1:
+        s_interp = path[0, 0]
+        d_displ = np.linalg.norm(ego_position - path[0, 1:3])
+    else:
 
-    # get previous and following point on path
-    if consider_as_closed:
-        if ind_min == 0:
-            ind_prev = dists_to_cg.shape[0] - 1
-            ind_follow = 1
 
-        elif ind_min == dists_to_cg.shape[0] - 1:
-            ind_prev = ind_min - 1
-            ind_follow = 0
+        # get the nearest path point to ego position
+        dists_to_cg = np.hypot(path[:, 1] - ego_position[0], path[:, 2] - ego_position[1])
+        ind_min = np.argpartition(dists_to_cg, 1)[0]
+
+        # get previous and following point on path
+        if consider_as_closed:
+            if ind_min == 0:
+                ind_prev = dists_to_cg.shape[0] - 1
+                ind_follow = 1
+
+            elif ind_min == dists_to_cg.shape[0] - 1:
+                ind_prev = ind_min - 1
+                ind_follow = 0
+
+            else:
+                ind_prev = ind_min - 1
+                ind_follow = ind_min + 1
 
         else:
-            ind_prev = ind_min - 1
-            ind_follow = ind_min + 1
+            ind_prev = max(ind_min - 1, 0)
+            ind_follow = min(ind_min + 1, dists_to_cg.shape[0] - 1)
 
-    else:
-        ind_prev = max(ind_min - 1, 0)
-        ind_follow = min(ind_min + 1, dists_to_cg.shape[0] - 1)
+        # get angle between selected point and neighbours
+        ang_prev = np.abs(angle3pt(path[ind_min, 1:], ego_position, path[ind_prev, 1:]))
 
-    # get angle between selected point and neighbours
-    ang_prev = np.abs(angle3pt(path[ind_min, 1:], ego_position, path[ind_prev, 1:]))
+        ang_follow = np.abs(angle3pt(path[ind_min, 1:], ego_position, path[ind_follow, 1:]))
 
-    ang_follow = np.abs(angle3pt(path[ind_min, 1:], ego_position, path[ind_follow, 1:]))
+        # extract neighboring points -> closest point and the point resulting in the larger angle
+        if ang_prev > ang_follow:
+            a_pos = path[ind_prev, 1:]
+            b_pos = path[ind_min, 1:]
+            s_curs = np.append(path[ind_prev, 0], path[ind_min, 0])
+        else:
+            a_pos = path[ind_min, 1:]
+            b_pos = path[ind_follow, 1:]
+            s_curs = np.append(path[ind_min, 0], path[ind_follow, 0])
 
-    # extract neighboring points -> closest point and the point resulting in the larger angle
-    if ang_prev > ang_follow:
-        a_pos = path[ind_prev, 1:]
-        b_pos = path[ind_min, 1:]
-        s_curs = np.append(path[ind_prev, 0], path[ind_min, 0])
-    else:
-        a_pos = path[ind_min, 1:]
-        b_pos = path[ind_follow, 1:]
-        s_curs = np.append(path[ind_min, 0], path[ind_follow, 0])
+        # adjust s if closed path shell be considered and we have the case of interpolation between last and first point
+        if consider_as_closed:
+            if ind_min == 0 and ang_prev > ang_follow:
+                s_curs[1] = s_tot
+            elif ind_min == dists_to_cg.shape[0] - 1 and ang_prev <= ang_follow:
+                s_curs[1] = s_tot
 
-    # adjust s if closed path shell be considered and we have the case of interpolation between last and first point
-    if consider_as_closed:
-        if ind_min == 0 and ang_prev > ang_follow:
-            s_curs[1] = s_tot
-        elif ind_min == dists_to_cg.shape[0] - 1 and ang_prev <= ang_follow:
-            s_curs[1] = s_tot
+        # project the ego position onto the line between the two points
+        dx = b_pos[0] - a_pos[0]
+        dy = b_pos[1] - a_pos[1]
+        lam = (dx * (ego_position[0] - a_pos[0]) + dy * (ego_position[1] - a_pos[1])) / (
+            dx**2 + dy**2
+        )
 
-    # project the ego position onto the line between the two points
-    dx = b_pos[0] - a_pos[0]
-    dy = b_pos[1] - a_pos[1]
-    lam = (dx * (ego_position[0] - a_pos[0]) + dy * (ego_position[1] - a_pos[1])) / (
-        dx**2 + dy**2
-    )
+        # ------------------------------------------------------------------------------------------------------------------
+        # CALCULATE REQUIRED INFORMATION -----------------------------------------------------------------------------------
+        # ------------------------------------------------------------------------------------------------------------------
 
-    # ------------------------------------------------------------------------------------------------------------------
-    # CALCULATE REQUIRED INFORMATION -----------------------------------------------------------------------------------
-    # ------------------------------------------------------------------------------------------------------------------
+        # calculate current path length
+        s_interp = s_curs[0] + lam * (s_curs[1] - s_curs[0])
 
-    # calculate current path length
-    s_interp = s_curs[0] + lam * (s_curs[1] - s_curs[0])
+        # get displacement between ego position and path (needed for lookahead distance)
+        x_proj = a_pos[0] + lam * dx
+        y_proj = a_pos[1] + lam * dy
 
-    # get displacement between ego position and path (needed for lookahead distance)
-    x_proj = a_pos[0] + lam * dx
-    y_proj = a_pos[1] + lam * dy
-
-    # try:
-    #     d_displ = np.sqrt(
-    #         np.linalg.norm(ego_position - a_pos) ** 2
-    #         - lam**2 * np.linalg.norm(b_pos - a_pos) ** 2
-    #     )
-    # except RuntimeWarning:
-    #     d_displ = 0.0
-    #     print(
-    #         np.linalg.norm(ego_position - a_pos) ** 2,
-    #         lam**2 * np.linalg.norm(b_pos - a_pos) ** 2,
-    #     )
-    d_displ = np.sqrt((ego_position - x_proj) ** 2 + (ego_position - y_proj) ** 2)
+        d_displ = np.sqrt((ego_position - x_proj) ** 2 + (ego_position - y_proj) ** 2)
 
     return s_interp, d_displ
