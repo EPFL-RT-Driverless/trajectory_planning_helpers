@@ -128,7 +128,6 @@ def calc_splines(
             # 2a_2i + 6a_3i - 2a_2i+1 = 0
         ]
     )
-
     for i in range(no_splines):
         j = i * 4
 
