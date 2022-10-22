@@ -57,9 +57,10 @@ def path_matching_local(
         d_displ = np.linalg.norm(ego_position - path[0, 1:3])
     else:
 
-
         # get the nearest path point to ego position
-        dists_to_cg = np.hypot(path[:, 1] - ego_position[0], path[:, 2] - ego_position[1])
+        dists_to_cg = np.hypot(
+            path[:, 1] - ego_position[0], path[:, 2] - ego_position[1]
+        )
         ind_min = np.argpartition(dists_to_cg, 1)[0]
 
         # get previous and following point on path
@@ -83,7 +84,9 @@ def path_matching_local(
         # get angle between selected point and neighbours
         ang_prev = np.abs(angle3pt(path[ind_min, 1:], ego_position, path[ind_prev, 1:]))
 
-        ang_follow = np.abs(angle3pt(path[ind_min, 1:], ego_position, path[ind_follow, 1:]))
+        ang_follow = np.abs(
+            angle3pt(path[ind_min, 1:], ego_position, path[ind_follow, 1:])
+        )
 
         # extract neighboring points -> closest point and the point resulting in the larger angle
         if ang_prev > ang_follow:
@@ -105,9 +108,9 @@ def path_matching_local(
         # project the ego position onto the line between the two points
         dx = b_pos[0] - a_pos[0]
         dy = b_pos[1] - a_pos[1]
-        lam = (dx * (ego_position[0] - a_pos[0]) + dy * (ego_position[1] - a_pos[1])) / (
-            dx**2 + dy**2
-        )
+        lam = (
+            dx * (ego_position[0] - a_pos[0]) + dy * (ego_position[1] - a_pos[1])
+        ) / (dx**2 + dy**2)
 
         # ------------------------------------------------------------------------------------------------------------------
         # CALCULATE REQUIRED INFORMATION -----------------------------------------------------------------------------------
