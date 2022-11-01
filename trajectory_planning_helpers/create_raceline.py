@@ -6,6 +6,7 @@ from .calc_normal_vectors_ahead import calc_normal_vectors_ahead
 
 # from time import perf_counter
 
+
 def create_raceline(
     refline: np.ndarray,
     normvectors: np.ndarray,

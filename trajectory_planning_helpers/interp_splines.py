@@ -115,7 +115,7 @@ def interp_splines(
     t_values = np.zeros(no_interp_points)  # save t values
     # t_values2 = np.zeros(no_interp_points)  # save t values
 
-    if stepsize_approx is not None: # always True in our implementation
+    if stepsize_approx is not None:  # always True in our implementation
 
         # --------------------------------------------------------------------------------------------------------------
         # APPROX. EQUAL STEP SIZE ALONG PATH OF ADJACENT SPLINES -------------------------------------------------------
@@ -128,22 +128,24 @@ def interp_splines(
         spline_inds = np.copy(j)
 
         # get spline t value depending on the progress within the current element
-        t_values[j > 0] = (dists_interp[j > 0] - dists_cum[j - 1][j > 0]) / spline_lengths[j][j > 0]
+        t_values[j > 0] = (
+            dists_interp[j > 0] - dists_cum[j - 1][j > 0]
+        ) / spline_lengths[j][j > 0]
         t_values[j == 0] = dists_interp[j == 0] / spline_lengths[0]
         t_values[-1] = 0.0
 
         # calculate coords
         path_interp[:, 0] = coeffs_x[j][:, 0]
 
-        path_interp[:, 0] += (coeffs_x[j][:, 1] * t_values)
-        path_interp[:, 0] += (coeffs_x[j][:, 2] * np.power(t_values, 2))
-        path_interp[:, 0] += (coeffs_x[j][:, 3] * np.power(t_values, 3))
+        path_interp[:, 0] += coeffs_x[j][:, 1] * t_values
+        path_interp[:, 0] += coeffs_x[j][:, 2] * np.power(t_values, 2)
+        path_interp[:, 0] += coeffs_x[j][:, 3] * np.power(t_values, 3)
 
         path_interp[:, 1] = coeffs_y[j][:, 0]
 
-        path_interp[:, 1] += (coeffs_y[j][:, 1] * t_values)
-        path_interp[:, 1] += (coeffs_y[j][:, 2] * np.power(t_values, 2))
-        path_interp[:, 1] += (coeffs_y[j][:, 3] * np.power(t_values, 3))
+        path_interp[:, 1] += coeffs_y[j][:, 1] * t_values
+        path_interp[:, 1] += coeffs_y[j][:, 2] * np.power(t_values, 2)
+        path_interp[:, 1] += coeffs_y[j][:, 3] * np.power(t_values, 3)
 
         path_interp[-1][0] = 0.0
         path_interp[-1][1] = 0.0

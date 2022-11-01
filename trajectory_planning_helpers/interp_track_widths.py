@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def interp_track_widths(
     w_track: np.ndarray,
     spline_inds: np.ndarray,
@@ -49,7 +50,9 @@ def interp_track_widths(
         w_track_interp = np.zeros((no_interp_points, w_track.shape[1]))
 
     # find the spline that hosts each interpolation point
-    w_track_cl_m = np.array([w_track_cl[spline_inds], w_track_cl[spline_inds + 1]]).transpose(1, 0, 2)
+    w_track_cl_m = np.array(
+        [w_track_cl[spline_inds], w_track_cl[spline_inds + 1]]
+    ).transpose(1, 0, 2)
 
     def multiInterp(x, fp):
         i = np.arange(x.size)
@@ -58,9 +61,9 @@ def interp_track_widths(
         return (1 - d) * fp[i, j] + fp[i, j + 1] * d
 
     # calculate track widths (linear approximation assumed along one spline)
-    w_track_interp[:, 0] = multiInterp(t_values, w_track_cl_m[:,0])
+    w_track_interp[:, 0] = multiInterp(t_values, w_track_cl_m[:, 0])
     w_track_interp[:, 1] = multiInterp(t_values, w_track_cl_m[:, 1])
-    if (w_track.shape[1] == 3):
+    if w_track.shape[1] == 3:
         w_track_interp[:, 2] = multiInterp(t_values, w_track_cl_m[:, 2])
 
     return w_track_interp

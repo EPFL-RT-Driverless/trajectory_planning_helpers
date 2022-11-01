@@ -209,6 +209,8 @@ def calc_splines(
 
     # normalize normal vectors
     norm_factors = 1.0 / np.linalg.norm(normvec, axis=1)
-    normvec_normalized = (np.expand_dims(1.0/np.linalg.norm(normvec, axis=1), axis=1)) * normvec
+    normvec_normalized = (
+        np.expand_dims(1.0 / np.linalg.norm(normvec, axis=1), axis=1)
+    ) * normvec
 
     return coeffs_x, coeffs_y, sparse_M.toarray(), normvec_normalized
