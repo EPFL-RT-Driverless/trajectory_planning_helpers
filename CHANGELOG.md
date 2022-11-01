@@ -1,3 +1,7 @@
+# v2.0.5
+
+Optimized functions `calc_splines`, `interp_track_widths`, `calc_spline_lengths`, `interp_splines`.
+
 # v2.0.4
 
 Fixed small bug in `local_path_matching()` to be able to localize points after the last

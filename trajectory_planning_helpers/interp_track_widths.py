@@ -49,22 +49,21 @@ def interp_track_widths(
     else:
         w_track_interp = np.zeros((no_interp_points, w_track.shape[1]))
 
-    # loop through every interpolation point
-    for i in range(no_interp_points):
-        # find the spline that hosts the current interpolation point
-        ind_spl = spline_inds[i]
+    # find the spline that hosts each interpolation point
+    w_track_cl_m = np.array(
+        [w_track_cl[spline_inds], w_track_cl[spline_inds + 1]]
+    ).transpose(1, 0, 2)
 
-        # calculate track widths (linear approximation assumed along one spline)
-        w_track_interp[i, 0] = np.interp(
-            t_values[i], (0.0, 1.0), w_track_cl[ind_spl : ind_spl + 2, 0]
-        )
-        w_track_interp[i, 1] = np.interp(
-            t_values[i], (0.0, 1.0), w_track_cl[ind_spl : ind_spl + 2, 1]
-        )
+    def multiInterp(x, fp):
+        i = np.arange(x.size)
+        j = 0
+        d = x
+        return (1 - d) * fp[i, j] + fp[i, j + 1] * d
 
-        if w_track.shape[1] == 3:
-            w_track_interp[i, 2] = np.interp(
-                t_values[i], (0.0, 1.0), w_track_cl[ind_spl : ind_spl + 2, 2]
-            )
+    # calculate track widths (linear approximation assumed along one spline)
+    w_track_interp[:, 0] = multiInterp(t_values, w_track_cl_m[:, 0])
+    w_track_interp[:, 1] = multiInterp(t_values, w_track_cl_m[:, 1])
+    if w_track.shape[1] == 3:
+        w_track_interp[:, 2] = multiInterp(t_values, w_track_cl_m[:, 2])
 
     return w_track_interp
