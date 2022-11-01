@@ -1,3 +1,6 @@
+# v2.0.5
+Optimized functions `calc_splines`, `interp_track_widths`, `calc_spline_lengths`, `interp_splines`.
+
 # v2.0.1
 
 Fixed import of git deps in `setup.py`
