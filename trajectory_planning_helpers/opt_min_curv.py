@@ -269,7 +269,7 @@ def opt_min_curv(
 
     # print preparation time
     print(
-        "Solver runtime opt_min_curv: "
+        "Preparation runtime opt_min_curv: "
         + "{:.3f}".format(time.perf_counter() - preparation_time_start)
         + "s"
     )
