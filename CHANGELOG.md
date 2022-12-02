@@ -1,3 +1,7 @@
+# v2.0.6
+
+suppressed automatic print statements in `opt_min_curv()`
+
 # v2.0.5
 
 Optimized functions `calc_splines`, `interp_track_widths`, `calc_spline_lengths`, `interp_splines`.
