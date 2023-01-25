@@ -1,3 +1,7 @@
+# v2.0.6
+
+added `COLCON_IGNORE` file to ignore this package in colcon builds (for brains repo)
+
 # v2.0.5
 
 Optimized functions `calc_splines`, `interp_track_widths`, `calc_spline_lengths`, `interp_splines`.
