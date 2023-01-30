@@ -1,3 +1,7 @@
+# v2.0.7
+
+suppressed automatic print statements in `opt_min_curv()`
+
 # v2.0.6
 
 added `COLCON_IGNORE` file to ignore this package in colcon builds (for brains repo)

@@ -268,11 +268,12 @@ def opt_min_curv(
     h = np.append(h, con_stack)
 
     # print preparation time
-    print(
-        "Preparation runtime opt_min_curv: "
-        + "{:.3f}".format(time.perf_counter() - preparation_time_start)
-        + "s"
-    )
+    if print_debug:
+        print(
+            "Preparation runtime opt_min_curv: "
+            + "{:.3f}".format(time.perf_counter() - preparation_time_start)
+            + "s"
+        )
 
     # save start time
     solve_time_start = time.perf_counter()
