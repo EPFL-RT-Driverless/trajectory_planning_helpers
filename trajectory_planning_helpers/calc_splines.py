@@ -4,14 +4,19 @@ import numpy as np
 
 import scipy as sp
 
+from time import perf_counter
+
+import ctypes
+
+# lib = ctypes.CDLL("libcalc_splines.so")
 
 def calc_splines(
-    path: np.ndarray,
-    el_lengths: np.ndarray = None,
-    closed: bool = False,
-    psi_s: float = None,
-    psi_e: float = None,
-    use_dist_scaling: bool = True,
+        path: np.ndarray,
+        el_lengths: np.ndarray = None,
+        closed: bool = False,
+        psi_s: float = None,
+        psi_e: float = None,
+        use_dist_scaling: bool = True,
 ) -> tuple:
     """
     author:
@@ -63,10 +68,11 @@ def calc_splines(
 
     Coefficient matrices have the form a_0i, a_1i * t, a_2i * t^2, a_3i * t^3.
     """
+    t1 = perf_counter()
     # check inputs =============================================================
     if not closed:
         assert (
-            psi_s is not None and psi_e is not None
+                psi_s is not None and psi_e is not None
         ), "psi_s and psi_e must be None if path is closed!"
 
     # if distances between path coordinates are not provided but required, calculate
@@ -132,18 +138,21 @@ def calc_splines(
         j = i * 4
 
         if i < no_splines - 1:
-            M[j : j + 4, j : j + 8] = template_M
+            M[j: j + 4, j: j + 8] = template_M
             M[j + 2, j + 5] *= scaling[i]
             M[j + 3, j + 6] *= math.pow(scaling[i], 2)
 
         else:
             # no curvature and heading bounds on last element (handled afterwards)
-            M[j : j + 2, j : j + 4] = np.array(
+            j = (no_splines-1)*4
+            M[j: j + 2, j: j + 4] = np.array(
                 [[1.0, 0.0, 0.0, 0.0], [1.0, 1.0, 1.0, 1.0]]
             )
 
-        b_x[j : j + 2] = np.array([path[i, 0], path[i + 1, 0]])
-        b_y[j : j + 2] = np.array([path[i, 1], path[i + 1, 1]])
+        b_x[j: j + 2] = np.array([path[i, 0], path[i + 1, 0]])
+        b_y[j: j + 2] = np.array([path[i, 1], path[i + 1, 1]])
+
+
 
     # ------------------------------------------------------------------------------------------------------------------
     # SET BOUNDARY CONDITIONS FOR LAST AND FIRST POINT -----------------------------------------------------------------
@@ -176,6 +185,7 @@ def calc_splines(
         b_y[-1] = math.sin(psi_e) * el_length_e
 
     else:
+        #print("closed")
         # heading boundary condition (for a closed spline)
         M[-2, 1] = scaling[-1]
         M[-2, -3:] = [-1, -2, -3]
@@ -199,6 +209,19 @@ def calc_splines(
 
     y_les = np.squeeze(sp.sparse.linalg.spsolve(sparse_M, b_y))
 
+    # x_les = np.zeros((no_splines*4))
+    # y_les = np.zeros((no_splines * 4))
+    # lib.calc_splines(scaling.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+    #                  path.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+    #                  x_les.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+    #                  y_les.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+    #                  M.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+    #                  no_splines)
+
+    #
+    # print("close : ", np.allclose(x_cpp, x_les))
+    # print("close : ", np.allclose(y_cpp, y_les))
+
     # get coefficients of every piece into one row -> reshape
     coeffs_x = np.reshape(x_les, (no_splines, 4))
     coeffs_y = np.reshape(y_les, (no_splines, 4))
@@ -210,7 +233,9 @@ def calc_splines(
     # normalize normal vectors
     norm_factors = 1.0 / np.linalg.norm(normvec, axis=1)
     normvec_normalized = (
-        np.expand_dims(1.0 / np.linalg.norm(normvec, axis=1), axis=1)
-    ) * normvec
+                             np.expand_dims(1.0 / np.linalg.norm(normvec, axis=1), axis=1)
+                         ) * normvec
 
-    return coeffs_x, coeffs_y, sparse_M.toarray(), normvec_normalized
+    t2 = perf_counter()
+    print("  calc_splines python + scipy: ", (t2 - t1) * 1000, "ms")
+    return coeffs_x, coeffs_y, M, normvec_normalized

@@ -5,6 +5,11 @@ import numpy as np
 import quadprog
 from matplotlib import pyplot as plt
 
+import ctypes
+
+# lib = ctypes.CDLL("libopt_min_curv.so")
+# osqp = ctypes.CDLL("./libosqp.so")
+# myosqp = ctypes.CDLL("libmyOSQP.so")
 
 def opt_min_curv(
     reftrack: np.ndarray,
@@ -128,7 +133,10 @@ def opt_min_curv(
         A_ex_c[-1, -4:] = np.array([0, 0, 2, 6])
 
     # invert matrix A resulting from the spline setup linear equation system and apply extraction matrix
+    t_inv = time.perf_counter()
     A_inv = np.linalg.inv(A)
+    t_inv = time.perf_counter() - t_inv
+    print("Time for inversion: " + str(t_inv*1000) + " ms")
     T_c = np.matmul(A_ex_c, A_inv)
 
     # set up M_x and M_y matrices including the gradient information, i.e. bring normal vectors into matrix form
@@ -239,6 +247,43 @@ def opt_min_curv(
     )  # multiplied by -1 as only LE conditions are poss.
     con_stack = np.append(con_ge, con_le)
 
+    # # lib.calc_splines(scaling.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+    # #                  path.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+    # #                  x_les.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+    # #                  y_les.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+    # #                  M.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+    # #                  no_splines)
+    #
+    # con_stack = np.zeros((2*no_points))
+    # E_kappa = np.zeros((no_points, no_points))
+    # H = np.zeros((no_points, no_points))
+    # f = np.zeros((1, no_points))
+    #
+    # lib.opt_min_curv(con_stack.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+    #                  E_kappa.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+    #                  H.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+    #                  f.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+    #                  normvectors.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+    #                  reftrack.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+    #                  A.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+    #                  no_splines,
+    #                  no_points,
+    #                  closed,
+    #                  ctypes.c_double(kappa_bound))
+
+    #compare the results
+    # print("--------------------")
+    # # print(f[:10])
+    # print(E_kappa2)
+    # print(E_kappa)
+    # print("--------------------")
+    # # print(f2)
+    # print("con_stack2 : ", np.allclose(con_stack2, con_stack, atol=1e-1))
+    # print("E_kappa2 : ", np.allclose(E_kappa2, E_kappa, atol=1e-1))
+    # print("H2 : ", np.allclose(H2, H, atol=1e-1))
+    f = np.squeeze(f)
+    # print("f2 : ", np.allclose(f2, f, atol=1e-1))
+
     # ------------------------------------------------------------------------------------------------------------------
     # CALL QUADRATIC PROGRAMMING ALGORITHM -----------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
@@ -257,15 +302,20 @@ def opt_min_curv(
         dev_max_right[-1] = 0.05
 
     # check that there is space remaining between left and right maximum deviation (both can be negative as well!)
-    if np.any(-dev_max_right > dev_max_left) or np.any(-dev_max_left > dev_max_right):
+    print("dev_max_right: ", reftrack[:, 2])
+    print(w_veh)
+    if np.any(dev_max_right < 1e-3) or np.any(dev_max_left < 1e-3):
         raise RuntimeError(
             "Problem not solvable, track might be too small to run with current safety distance!"
         )
 
     # consider value boundaries (-dev_max_left <= alpha <= dev_max_right)
     G = np.vstack((np.eye(no_points), -np.eye(no_points), E_kappa, -E_kappa))
+    print("G shape: ", G.shape)
     h = np.append(dev_max_right, dev_max_left)
     h = np.append(h, con_stack)
+
+    print("h shape: ", h.shape)
 
     # print preparation time
     if print_debug:
@@ -321,7 +371,22 @@ def opt_min_curv(
         The quadprog solver only considers the lower entries of `H`, therefore it
         will use a wrong cost function if a non-symmetric matrix is provided.
         """
-        alpha_mincurv = quadprog.solve_qp(H, -f, -G.T, -h, 0)[0]
+        alpha_mincurv, v = quadprog.solve_qp(H, -f, -G.T, -h, 0)[:2]
+        print(v)
+        # print(alpha_mincurv.shape)
+        # alpha_mincurv = np.zeros(no_points)
+        # myosqp.OSQP(
+        #     alpha_mincurv.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+        #     np.triu(H).ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+        #     f.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+        #     (-G).ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+        #     (-h).ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+        #     no_points
+        # )
+        # print(result[:10])
+        # print(alpha_mincurv[:10])
+        print(2*np.matmul(np.matmul(alpha_mincurv.T, np.triu(H)), alpha_mincurv) - alpha_mincurv.T@np.diag(np.diag(H))@alpha_mincurv + np.matmul(f.T, alpha_mincurv))
+        # print("close to what we want: ", np.allclose(result, alpha_mincurv, atol=1e-1))
 
     else:
         raise ValueError("Unknown method: " + method)

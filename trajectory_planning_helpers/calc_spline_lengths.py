@@ -3,12 +3,16 @@ import math
 
 from time import perf_counter
 
+import ctypes
 
+# lib = ctypes.CDLL("libcalc_spline_lengths.so")
+
+# print(lib)
 def calc_spline_lengths(
-    coeffs_x: np.ndarray,
-    coeffs_y: np.ndarray,
-    quickndirty: bool = False,
-    no_interp_points: int = 15,
+        coeffs_x: np.ndarray,
+        coeffs_y: np.ndarray,
+        quickndirty: bool = False,
+        no_interp_points: int = 15,
 ) -> np.ndarray:
     """
     author:
@@ -39,7 +43,6 @@ def calc_spline_lengths(
     # ------------------------------------------------------------------------------------------------------------------
     # PREPARATIONS -----------------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
-
     # check inputs
     if coeffs_x.shape[0] != coeffs_y.shape[0]:
         raise RuntimeError("Coefficient matrices must have the same length!")
@@ -52,10 +55,17 @@ def calc_spline_lengths(
     # get number of splines and create output array
     no_splines = coeffs_x.shape[0]
     spline_lengths = np.zeros(no_splines)
+    # spline_lengths2 = np.zeros(no_splines)
 
     # ------------------------------------------------------------------------------------------------------------------
     # CALCULATE LENGHTS ------------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
+
+    # lib.calc_spline_lengths(coeffs_x.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+    #                         coeffs_y.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+    #                         spline_lengths.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+    #                         no_splines)
+    # return spline_lengths
 
     if quickndirty:  # THE CLEAN VERSION IS NOW FASTER SO USE IT.
         for i in range(no_splines):
@@ -113,4 +123,8 @@ def calc_spline_lengths(
         )
         # print("      numpy magic : {} ms".format((perf_counter() - t1) * 1000))
 
+    # t2 = perf_counter()
+    # print("      calc_spline_lengths : {} ms".format((t2 - t1) * 1000))
+
+    #print(np.linalg.norm(spline_lengths - spline_lengths2))
     return spline_lengths
