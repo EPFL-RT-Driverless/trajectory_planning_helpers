@@ -8,7 +8,7 @@
 from typing import Tuple, List, Union
 
 import numpy as np
-from scipy.integrate import quadrature
+from scipy.integrate import quad as quadrature
 from scipy.interpolate import CubicSpline
 from scipy.optimize import bisect
 

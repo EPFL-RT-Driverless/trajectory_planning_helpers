@@ -5,7 +5,7 @@ import os
 import matplotlib
 import numpy as np
 from matplotlib import pyplot as plt
-from scipy.integrate import quadrature
+from scipy.integrate import quad as quadrature
 from scipy.interpolate import CubicSpline
 
 from trajectory_planning_helpers import uniform_spline_from_points
